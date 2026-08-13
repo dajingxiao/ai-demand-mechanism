@@ -1,0 +1,655 @@
+<title>AI 需求流转与交付机制</title>
+<style>
+  :root {
+    --bg: #F0F2F8;
+    --bg-card: #FFFFFF;
+    --bg-tag: #EEF2FF;
+    --border: #E4E7F0;
+    --text: #0F1117;
+    --text-muted: #6B7280;
+    --text-faint: #9CA3AF;
+    --blue: #4361EE;
+    --blue-light: #EEF2FF;
+    --blue-mid: #6982F4;
+    --green: #059669;
+    --green-light: #ECFDF5;
+    --amber: #D97706;
+    --amber-light: #FFFBEB;
+    --red: #DC2626;
+    --red-light: #FEF2F2;
+    --shadow-xs: 0 1px 3px rgba(15,17,25,0.06);
+    --shadow-sm: 0 2px 8px rgba(15,17,25,0.07), 0 1px 2px rgba(15,17,25,0.04);
+    --r-sm: 8px;
+    --r-md: 12px;
+    --r-lg: 16px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0C0E14;
+      --bg-card: #161820;
+      --bg-tag: #1A1E30;
+      --border: #242736;
+      --text: #F1F2F7;
+      --text-muted: #8B8FA8;
+      --text-faint: #5C6077;
+      --blue: #6882F8;
+      --blue-light: #141828;
+      --blue-mid: #4A62D8;
+      --green: #10B981;
+      --green-light: #0C1E18;
+      --amber: #F59E0B;
+      --amber-light: #1C1608;
+      --red: #EF4444;
+      --red-light: #1C0C0C;
+      --shadow-xs: 0 1px 3px rgba(0,0,0,0.3);
+      --shadow-sm: 0 2px 8px rgba(0,0,0,0.28), 0 1px 2px rgba(0,0,0,0.18);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0C0E14;
+    --bg-card: #161820;
+    --bg-tag: #1A1E30;
+    --border: #242736;
+    --text: #F1F2F7;
+    --text-muted: #8B8FA8;
+    --text-faint: #5C6077;
+    --blue: #6882F8;
+    --blue-light: #141828;
+    --blue-mid: #4A62D8;
+    --green: #10B981;
+    --green-light: #0C1E18;
+    --amber: #F59E0B;
+    --amber-light: #1C1608;
+    --red: #EF4444;
+    --red-light: #1C0C0C;
+    --shadow-xs: 0 1px 3px rgba(0,0,0,0.3);
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.28), 0 1px 2px rgba(0,0,0,0.18);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "PingFang SC", "SF Pro Text", "Helvetica Neue", sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 24px 96px; }
+
+  /* Header */
+  .header {
+    background: var(--bg-card);
+    border-radius: var(--r-lg);
+    padding: 36px 40px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--blue) 0%, var(--blue-mid) 60%, transparent 100%);
+  }
+  .header-eyebrow {
+    display: inline-flex; align-items: center;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--blue);
+    background: var(--blue-light); padding: 4px 10px;
+    border-radius: 20px; margin-bottom: 16px;
+  }
+  .header-title {
+    font-size: 28px; font-weight: 800;
+    letter-spacing: -0.025em; line-height: 1.2;
+    color: var(--text); margin-bottom: 8px;
+  }
+  .header-subtitle { font-size: 14px; color: var(--text-muted); line-height: 1.6; max-width: 540px; }
+  .header-meta { display: flex; gap: 6px; margin-top: 20px; flex-wrap: wrap; }
+  .meta-pill {
+    font-size: 12px; color: var(--text-muted);
+    background: var(--bg); border: 1px solid var(--border);
+    padding: 3px 10px; border-radius: 20px;
+  }
+  .meta-pill strong { color: var(--text); font-weight: 600; margin-right: 2px; }
+
+  /* Section card */
+  .section { margin-bottom: 20px; }
+  .section-card {
+    background: var(--bg-card);
+    border-radius: var(--r-lg);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+  .section-head {
+    display: flex; align-items: center; gap: 10px;
+    padding: 16px 24px; border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 28px; height: 28px; border-radius: 8px;
+    background: var(--blue-light);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; flex-shrink: 0;
+  }
+  .section-title { font-size: 15px; font-weight: 700; color: var(--text); }
+  .section-body { padding: 24px; }
+
+  /* Pipeline */
+  .pipeline { display: flex; align-items: center; gap: 0; overflow-x: auto; padding: 4px 0; }
+  .pipe-node { flex-shrink: 0; }
+  .pipe-bubble {
+    background: var(--bg); border: 1.5px solid var(--border);
+    border-radius: var(--r-sm); padding: 10px 14px;
+    text-align: center; min-width: 96px;
+  }
+  .pipe-bubble.is-gate { background: var(--blue-light); border-color: var(--blue-mid); }
+  .pipe-tag { font-size: 9px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 3px; }
+  .pipe-bubble.is-gate .pipe-tag { color: var(--blue); }
+  .pipe-label { font-size: 12px; font-weight: 700; color: var(--text); line-height: 1.3; }
+  .pipe-bubble.is-gate .pipe-label { color: var(--blue); }
+  .pipe-arrow { padding: 0 6px; color: var(--text-faint); font-size: 15px; flex-shrink: 0; }
+
+  /* Gate cards */
+  .gates { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+  @media (max-width: 640px) { .gates { grid-template-columns: 1fr; } }
+  .gate-card { border-radius: var(--r-md); border: 1.5px solid var(--border); overflow: hidden; box-shadow: var(--shadow-xs); }
+  .gate-head {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 14px; background: var(--bg); border-bottom: 1px solid var(--border);
+  }
+  .gate-num {
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--blue); color: #fff;
+    font-size: 10px; font-weight: 800;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .gate-name { font-size: 12px; font-weight: 700; color: var(--text); }
+  .gate-body { padding: 10px 14px; background: var(--bg-card); }
+  .check {
+    display: flex; align-items: flex-start; gap: 7px;
+    padding: 5px 0; border-bottom: 1px solid var(--border);
+    font-size: 12px; line-height: 1.4; color: var(--text);
+  }
+  .check:last-child { border-bottom: none; padding-bottom: 0; }
+  .check-dot { flex-shrink: 0; margin-top: 2px; font-size: 11px; font-weight: 800; }
+  .check-dot.p { color: var(--green); }
+  .check-dot.w { color: var(--amber); }
+  .check-dot.f { color: var(--red); }
+
+  /* Result table */
+  .tbl-wrap { overflow-x: auto; }
+  .rtable { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .rtable th {
+    text-align: left; padding: 9px 14px;
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--text-muted); background: var(--bg); border-bottom: 1px solid var(--border);
+  }
+  .rtable td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text); line-height: 1.5; vertical-align: middle; }
+  .rtable tr:last-child td { border-bottom: none; }
+  .rtable tr:hover td { background: var(--bg); }
+  .badge { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+  .b-green { background: var(--green-light); color: var(--green); }
+  .b-amber { background: var(--amber-light); color: var(--amber); }
+  .b-blue  { background: var(--blue-light);  color: var(--blue); }
+  .b-red   { background: var(--red-light);   color: var(--red); }
+
+  /* Value matrix */
+  .vmtable { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .vmtable th {
+    text-align: left; padding: 9px 14px;
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--text-muted); background: var(--bg); border-bottom: 1px solid var(--border);
+  }
+  .vmtable td { padding: 11px 14px; border-bottom: 1px solid var(--border); color: var(--text); line-height: 1.5; vertical-align: top; font-size: 12.5px; }
+  .vmtable tr:last-child td { border-bottom: none; }
+  .vmtable tr:hover td { background: var(--bg); }
+  .vmtable td:first-child { font-weight: 600; white-space: nowrap; }
+  .dim-sub { font-size: 11px; color: var(--text-faint); font-weight: 400; display: block; }
+  .score-chip { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 700; margin-right: 4px; }
+  .chip-hi  { background: var(--blue-light);  color: var(--blue); }
+  .chip-mid { background: var(--amber-light); color: var(--amber); }
+  .chip-lo  { background: var(--red-light);   color: var(--red); }
+
+  /* Collab flows */
+  .collab-flows { display: flex; flex-direction: column; gap: 12px; }
+  .cb { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-md); overflow: hidden; box-shadow: var(--shadow-xs); }
+  .cb-head { display: flex; align-items: center; gap: 8px; padding: 12px 18px; background: var(--bg); border-bottom: 1px solid var(--border); }
+  .cb-role { font-size: 10px; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase; color: var(--blue); background: var(--blue-light); padding: 3px 8px; border-radius: 20px; }
+  .cb-label { font-size: 13px; font-weight: 600; color: var(--text); }
+  .cb-body { padding: 18px 18px; }
+
+  /* Linear flow */
+  .fflow { display: flex; align-items: center; gap: 0; overflow-x: auto; padding-bottom: 2px; }
+  .fn { flex-shrink: 0; }
+  .fn-pill {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 9px 14px; border-radius: 24px;
+    border: 1.5px solid var(--border); background: var(--bg);
+    min-width: 88px; max-width: 112px; text-align: center;
+  }
+  .fn-pill.start { background: var(--blue-light); border-color: var(--blue-mid); }
+  .fn-pill.end   { background: var(--green-light); border-color: var(--green); }
+  .fn-who { font-size: 9px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 3px; }
+  .fn-pill.start .fn-who { color: var(--blue); }
+  .fn-pill.end   .fn-who { color: var(--green); }
+  .fn-what { font-size: 11.5px; font-weight: 700; line-height: 1.25; color: var(--text); }
+  .fn-pill.start .fn-what { color: var(--blue); }
+  .fn-pill.end   .fn-what { color: var(--green); }
+  .fn-detail { font-size: 10px; color: var(--text-muted); margin-top: 2px; line-height: 1.3; }
+  .fa { padding: 0 5px; color: var(--text-faint); font-size: 14px; flex-shrink: 0; display: flex; align-items: center; }
+
+  /* Fork flow (branching) */
+  .fork-flow { display: flex; align-items: flex-start; gap: 0; overflow-x: auto; padding-bottom: 2px; }
+  .fork-left { display: flex; align-items: center; flex-shrink: 0; }
+  .fork-branches { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
+  .fork-branch { display: flex; align-items: center; gap: 0; }
+  .fork-arrow-wrap { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 6px; flex-shrink: 0; position: relative; }
+  .fork-line {
+    width: 1px; background: var(--border); flex-shrink: 0;
+    position: absolute; top: 0; bottom: 0; left: 50%;
+  }
+  .fork-tick {
+    display: flex; align-items: center; gap: 4px;
+    color: var(--text-faint); font-size: 13px; position: relative; z-index: 1;
+    padding: 2px 0;
+  }
+  .fork-tick::before { content: ''; width: 14px; height: 1px; background: var(--border); display: block; }
+
+  /* Delivery steps */
+  .delivery { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
+  @media (max-width: 580px) { .delivery { grid-template-columns: 1fr 1fr; } }
+  .dstep {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--r-md); padding: 16px; box-shadow: var(--shadow-xs);
+    position: relative; overflow: hidden;
+  }
+  .dstep::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--blue), var(--blue-mid)); }
+  .dstep-num { font-size: 9px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--blue); margin-bottom: 6px; }
+  .dstep-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 5px; line-height: 1.3; }
+  .dstep-body  { font-size: 11.5px; color: var(--text-muted); line-height: 1.5; }
+
+  /* Callout */
+  .callout {
+    background: var(--blue-light); border-left: 3px solid var(--blue);
+    border-radius: 0 var(--r-sm) var(--r-sm) 0;
+    padding: 12px 16px; margin-bottom: 16px;
+    font-size: 13px; line-height: 1.6; color: var(--text);
+  }
+  .callout strong { color: var(--blue); }
+
+  p { font-size: 13.5px; color: var(--text-muted); line-height: 1.7; margin-bottom: 12px; }
+  p:last-child { margin-bottom: 0; }
+  .gap { margin-top: 16px; }
+</style>
+
+<div class="wrap">
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-eyebrow">黄流产品 · 机制设计</div>
+    <h1 class="header-title">AI 需求流转与交付机制</h1>
+    <p class="header-subtitle">定义什么是「真 AI」需求、明确与业务团队、部门内外的协作机制。</p>
+    <div class="header-meta">
+      <span class="meta-pill"><strong>版本</strong>v1.0</span>
+    </div>
+  </header>
+
+  <!-- 一、全流程 -->
+  <section class="section">
+    <div class="section-card">
+      <div class="section-head">
+        <div class="section-icon">⚡</div>
+        <span class="section-title">一、AI 需求流转全流程</span>
+      </div>
+      <div class="section-body">
+        <div class="pipeline">
+          <div class="pipe-node">
+            <div class="pipe-bubble">
+              <div class="pipe-tag">入口</div>
+              <div class="pipe-label">业务方提报</div>
+            </div>
+          </div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-node">
+            <div class="pipe-bubble is-gate">
+              <div class="pipe-tag">第一道</div>
+              <div class="pipe-label">真 AI 需求鉴别</div>
+            </div>
+          </div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-node">
+            <div class="pipe-bubble is-gate">
+              <div class="pipe-tag">第二道</div>
+              <div class="pipe-label">价值评估</div>
+            </div>
+          </div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-node">
+            <div class="pipe-bubble is-gate">
+              <div class="pipe-tag">第三道</div>
+              <div class="pipe-label">可行性核查</div>
+            </div>
+          </div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-node">
+            <div class="pipe-bubble">
+              <div class="pipe-tag">承接</div>
+              <div class="pipe-label">需求排期</div>
+            </div>
+          </div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-node">
+            <div class="pipe-bubble">
+              <div class="pipe-tag">收尾</div>
+              <div class="pipe-label">效果复盘</div>
+            </div>
+          </div>
+        </div>
+        <p class="gap">三道需求价值的顺序评估，任一道未通过则退回或暂缓，不进入下一环节。只有全部通过的需求才进入版本排期资源池。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 二、真AI需求评估 -->
+  <section class="section">
+    <div class="section-card">
+      <div class="section-head">
+        <div class="section-icon">🔍</div>
+        <span class="section-title">二、真 AI 需求评估</span>
+      </div>
+      <div class="section-body">
+        <div class="gates">
+          <!-- 第一道 -->
+          <div class="gate-card">
+            <div class="gate-head">
+              <div class="gate-num">1</div>
+              <div class="gate-name">AI 属性鉴别 — 「真 AI」标准</div>
+            </div>
+            <div class="gate-body">
+              <div class="check"><span class="check-dot p">✓</span><span>有明确的模型或算法调用（推荐、分类、生成、理解类）</span></div>
+              <div class="check"><span class="check-dot p">✓</span><span>输出结果依赖数据训练或推理，而非写死规则</span></div>
+              <div class="check"><span class="check-dot p">✓</span><span>有明确的模型版本 / 接口依赖，可描述数据流向</span></div>
+              <div class="check"><span class="check-dot f">✗</span><span>仅改 UI 文案，包含「AI」「智能」字样</span></div>
+              <div class="check"><span class="check-dot f">✗</span><span>本质为规则引擎 / 条件判断，无模型依赖</span></div>
+              <div class="check"><span class="check-dot f">✗</span><span>AI 只是包装，核心逻辑与 AI 能力无关</span></div>
+            </div>
+          </div>
+          <!-- 第二道 -->
+          <div class="gate-card">
+            <div class="gate-head">
+              <div class="gate-num">2</div>
+              <div class="gate-name">价值评估 — 值不值得做</div>
+            </div>
+            <div class="gate-body">
+              <div class="check"><span class="check-dot p">✓</span><span>有量化目标（转化率 / 时效 / 成本 / 体验分）</span></div>
+              <div class="check"><span class="check-dot p">✓</span><span>影响用户规模 / 业务体量可描述</span></div>
+              <div class="check"><span class="check-dot p">✓</span><span>符合黄流年度 AI 建设方向之一</span></div>
+              <div class="check"><span class="check-dot w">△</span><span>价值存在但短期难量化 → 降级处理，需额外说明</span></div>
+              <div class="check"><span class="check-dot f">✗</span><span>仅有体验描述，无任何可测量指标</span></div>
+              <div class="check"><span class="check-dot f">✗</span><span>影响范围极小或与核心链路无关</span></div>
+            </div>
+          </div>
+          <!-- 第三道 -->
+          <div class="gate-card">
+            <div class="gate-head">
+              <div class="gate-num">3</div>
+              <div class="gate-name">可行性核查 — 现在能不能做</div>
+            </div>
+            <div class="gate-body">
+              <div class="check"><span class="check-dot p">✓</span><span>算法侧有能力</span></div>
+              <div class="check"><span class="check-dot p">✓</span><span>所需训练数据可获取</span></div>
+              <div class="check"><span class="check-dot p">✓</span><span>工程侧具备接入条件（延迟、稳定性）</span></div>
+              <div class="check"><span class="check-dot w">△</span><span>依赖项排期未确定 → 暂缓，进入 AI Backlog</span></div>
+              <div class="check"><span class="check-dot f">✗</span><span>算法能力暂不具备，且无明确交付时间</span></div>
+              <div class="check"><span class="check-dot f">✗</span><span>数据缺失或存在合规问题无法解决</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="gap tbl-wrap">
+          <table class="rtable">
+            <thead>
+              <tr>
+                <th>评估结论</th>
+                <th>检查状态</th>
+                <th>处理方式</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="badge b-green">通过</span></td>
+                <td>三道全通过</td>
+                <td>进入版本排期资源池，主产品全程跟进</td>
+              </tr>
+              <tr>
+                <td><span class="badge b-amber">暂缓</span></td>
+                <td>第三道未通（依赖未就绪）</td>
+                <td>进入 AI Backlog，依赖项就绪后重新触发评估</td>
+              </tr>
+              <tr>
+                <td><span class="badge b-blue">降级</span></td>
+                <td>第一道通过 / 第二道价值低</td>
+                <td>反馈原因，建议按普通需求走常规流程</td>
+              </tr>
+              <tr>
+                <td><span class="badge b-red">退回</span></td>
+                <td>第一道未通（伪 AI）</td>
+                <td>反馈原因，建议按普通需求走常规流程</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 三、价值判断框架 -->
+  <section class="section">
+    <div class="section-card">
+      <div class="section-head">
+        <div class="section-icon">📊</div>
+        <span class="section-title">三、AI 需求价值判断框架</span>
+      </div>
+      <div class="section-body">
+        <div class="callout">
+          <strong>评分原则：</strong>综合价值分 = 业务影响（40%）+ 战略契合（30%）+ 可复用性（20%）+ 数据飞轮（10%）。任意维度 1 分则不参与综合计算，直接降级。
+        </div>
+        <div class="tbl-wrap">
+          <table class="vmtable">
+            <thead>
+              <tr>
+                <th>评估维度</th>
+                <th><span class="score-chip chip-hi">高 4–5</span>高价值</th>
+                <th><span class="score-chip chip-mid">中 2–3</span>中价值</th>
+                <th><span class="score-chip chip-lo">低 0–1</span>低价值</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>业务影响<span class="dim-sub">GMV / 转化 / 效率</span></td>
+                <td>影响核心链路，有测算依据的 GMV 或效率提升</td>
+                <td>影响局部场景，有定性收益描述</td>
+                <td>纯体验优化，无量化收益</td>
+              </tr>
+              <tr>
+                <td>战略契合<span class="dim-sub">与年度方向对齐</span></td>
+                <td>明确命中黄流 AI 年度重点方向</td>
+                <td>与战略方向相关但非核心</td>
+                <td>与当前战略方向无关联</td>
+              </tr>
+              <tr>
+                <td>可复用性<span class="dim-sub">能力沉淀价值</span></td>
+                <td>产出通用能力组件，可多场景复用</td>
+                <td>部分可抽象，需额外改造</td>
+                <td>完全定制，无法复用</td>
+              </tr>
+              <tr>
+                <td>数据飞轮<span class="dim-sub">越用越好的潜力</span></td>
+                <td>线上数据可反哺模型迭代，形成正向循环</td>
+                <td>有数据沉淀但反哺路径不清晰</td>
+                <td>一次性交付，无数据积累</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 四、协作机制 -->
+  <section class="section">
+    <div class="section-card">
+      <div class="section-head">
+        <div class="section-icon">🤝</div>
+        <span class="section-title">四、协作机制</span>
+      </div>
+      <div class="section-body">
+        <div class="collab-flows">
+
+          <!-- 业务部门协作 -->
+          <div class="cb">
+            <div class="cb-head">
+              <span class="cb-role">业务部门</span>
+              <span class="cb-label">AI 需求协作机制</span>
+            </div>
+            <div class="cb-body">
+              <div class="fflow">
+                <div class="fn">
+                  <div class="fn-pill start">
+                    <div class="fn-who">部门 BP</div>
+                    <div class="fn-what">收到 AI 需求</div>
+                  </div>
+                </div>
+                <div class="fa">→</div>
+                <div class="fn">
+                  <div class="fn-pill">
+                    <div class="fn-who">部门 BP</div>
+                    <div class="fn-what">初步评估</div>
+                    <div class="fn-detail">真 AI 需求鉴别</div>
+                  </div>
+                </div>
+                <div class="fa">→</div>
+                <div class="fn">
+                  <div class="fn-pill">
+                    <div class="fn-who">判断</div>
+                    <div class="fn-what">确认是 AI 需求</div>
+                  </div>
+                </div>
+                <div class="fa">→</div>
+                <div class="fn">
+                  <div class="fn-pill end">
+                    <div class="fn-who">流转</div>
+                    <div class="fn-what">转给 AI 侧 BP</div>
+                    <div class="fn-detail">进入 AI 流转流程</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 部门内协作 -->
+          <div class="cb">
+            <div class="cb-head">
+              <span class="cb-role">部门内部</span>
+              <span class="cb-label">AI 需求协作机制</span>
+            </div>
+            <div class="cb-body">
+              <!-- 线性前段 -->
+              <div class="fflow" style="margin-bottom:14px;">
+                <div class="fn">
+                  <div class="fn-pill start">
+                    <div class="fn-who">各模块产品</div>
+                    <div class="fn-what">填写 AI 需求池</div>
+                  </div>
+                </div>
+                <div class="fa">→</div>
+                <div class="fn">
+                  <div class="fn-pill">
+                    <div class="fn-who">AI 产品</div>
+                    <div class="fn-what">每周需求讨论会</div>
+                  </div>
+                </div>
+                <div class="fa">→</div>
+                <div class="fn" style="display:flex;align-items:center;">
+                  <div style="font-size:11px;font-weight:700;color:var(--text-faint);padding:0 4px;">分类</div>
+                </div>
+              </div>
+              <!-- 分叉两条路 -->
+              <div style="display:flex;flex-direction:column;gap:8px;padding-left:24px;border-left:2px solid var(--border);margin-left:8px;">
+                <div class="fflow">
+                  <div style="font-size:10px;font-weight:700;color:var(--blue);background:var(--blue-light);padding:2px 8px;border-radius:20px;white-space:nowrap;margin-right:10px;flex-shrink:0;">通用方案</div>
+                  <div class="fa" style="padding:0 4px;">→</div>
+                  <div class="fn">
+                    <div class="fn-pill end">
+                      <div class="fn-who">AI 产品</div>
+                      <div class="fn-what">推进落地</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="fflow">
+                  <div style="font-size:10px;font-weight:700;color:var(--amber);background:var(--amber-light);padding:2px 8px;border-radius:20px;white-space:nowrap;margin-right:10px;flex-shrink:0;">模块定制</div>
+                  <div class="fa" style="padding:0 4px;">→</div>
+                  <div class="fn">
+                    <div class="fn-pill">
+                      <div class="fn-who">模块产品</div>
+                      <div class="fn-what">负责落地</div>
+                    </div>
+                  </div>
+                  <div class="fa">+</div>
+                  <div class="fn">
+                    <div class="fn-pill end">
+                      <div class="fn-who">AI 产品</div>
+                      <div class="fn-what">提供策略支持</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 五、功能交付机制 -->
+  <section class="section">
+    <div class="section-card">
+      <div class="section-head">
+        <div class="section-icon">🚀</div>
+        <span class="section-title">五、功能交付机制</span>
+      </div>
+      <div class="section-body">
+        <div class="callout">
+          <strong>核心原则：</strong>AI 功能上线前须确立效果基线，上线后强制跑数验证，而非上线即完成。每个 AI 需求都对应结案数据。
+        </div>
+        <div class="delivery">
+          <div class="dstep">
+            <div class="dstep-num">立项</div>
+            <div class="dstep-title">AI 需求卡</div>
+            <div class="dstep-body">记录业务背景、量化目标、三道评估结论。立项即归档，作为后续验收基准。</div>
+          </div>
+          <div class="dstep">
+            <div class="dstep-num">设计</div>
+            <div class="dstep-title">全链路 PRD + 降级策略</div>
+            <div class="dstep-body">正常态交互、模型超时 / 低置信兜底、AB 实验设计、埋点规范一并输出。</div>
+          </div>
+          <div class="dstep">
+            <div class="dstep-num">上线</div>
+            <div class="dstep-title">灰度验证 + 基线核查</div>
+            <div class="dstep-body">5%–20% 灰度，效果达到预定基线后方可全量。产品与算法侧共同确认。</div>
+          </div>
+          <div class="dstep">
+            <div class="dstep-num">验收</div>
+            <div class="dstep-title">T+4 周效果报告</div>
+            <div class="dstep-body">对照立项量化目标出实际数据，反馈业务方，结果沉淀进 AI 季度复盘。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
